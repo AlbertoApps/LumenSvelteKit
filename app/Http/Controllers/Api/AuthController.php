@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class AuthController extends Controller
 {
@@ -24,10 +26,11 @@ class AuthController extends Controller
      */
     public function login()
     {
+        
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            throw new UnauthorizedHttpException( 'Unauthorized', 'Invalid credentials' );
         }
 
         return $this->respondWithToken($token);
@@ -63,6 +66,24 @@ class AuthController extends Controller
     public function refresh()
     {
         return $this->respondWithToken(auth()->refresh());
+    }
+
+    /**
+     * Check if the current token is still valid.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function check()
+    {
+        try {
+            if (auth()->check()) {
+                return response()->json(['message' => 'Token is valid'], 200);
+            } else {
+                return response()->json(['message' => 'Token is invalid or expired'], 401);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Token is invalid or expired'], 401);
+        }
     }
 
     /**

@@ -1,25 +1,15 @@
 <?php
-
-/** @var \Laravel\Lumen\Routing\Router $router */
-
+require __DIR__.'/api.php';
 /*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It is a breeze. Simply tell Lumen the URIs it should respond to
-| and give it the Closure to call when that URI is requested.
-|
-*/
-
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    //return $router->app->version();
+    return file_get_contents(public_path('build/index.html'));
+});*/
+
+$router->get('/{any:.*}', function ($any) {
+    if (preg_match('/^api/', $any)) {
+        abort(404);
+    }
+    return file_get_contents(public_path('build/index.html'));
 });
 
-$router->group(['prefix' => 'api'], function () use ($router) {
-    $router->post('login', ['uses' => 'Api\AuthController@login']);
-    $router->post('logout', ['uses' => 'Api\AuthController@logout']);
-    $router->post('refresh', ['uses' => 'Api\AuthController@refresh']);
-    $router->post('me', ['uses' => 'Api\AuthController@me']);
-});
